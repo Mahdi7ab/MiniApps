@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pomodoro Timer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for the progress circle */
+        .progress-circle {
+            transform: rotate(-90deg);
+        }
+        .progress-circle__background {
+            fill: none;
+            stroke: #e5e7eb;
+        }
+        .progress-circle__progress {
+            fill: none;
+            stroke: #ff6347;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.1s linear;
+        }
+        /* Custom range slider thumb */
+        input[type="range"]::-webkit-slider-thumb {
+            background: #ff6347;
+        }
+        input[type="range"]::-moz-range-thumb {
+            background: #ff6347;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div class="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
+        <h1 class="text-2xl font-bold text-center mb-6 text-[#ff6347]">Pomodoro Timer</h1>
+        
+        <!-- Timer Display and Progress Circle -->
+        <div class="relative flex justify-center mb-6">
+            <svg class="w-40 h-40 progress-circle">
+                <circle class="progress-circle__background" cx="80" cy="80" r="70" stroke-width="10"/>
+                <circle class="progress-circle__progress" cx="80" cy="80" r="70" stroke-width="10" stroke-dasharray="439.6" stroke-dashoffset="0"/>
+            </svg>
+            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-4xl font-mono">
+                <span id="timer">25:00</span>
+            </div>
+        </div>
+
+        <!-- Mode Indicator -->
+        <p class="text-center text-lg mb-4">
+            <span id="mode" class="font-semibold text-[#ff6347]">Work</span> Session
+        </p>
+
+        <!-- Sliders for Work and Break Intervals -->
+        <div class="mb-6">
+            <div class="flex items-center justify-between">
+                <label for="workInterval" class="text-sm font-medium text-gray-700">Work Interval (min):</label>
+                <span id="workValue" class="text-sm text-[#ff6347]">25</span>
+            </div>
+            <input type="range" id="workInterval" min="1" max="60" value="25" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+        </div>
+        <div class="mb-6">
+            <div class="flex items-center justify-between">
+                <label for="breakInterval" class="text-sm font-medium text-gray-700">Break Interval (min):</label>
+                <span id="breakValue" class="text-sm text-[#ff6347]">5</span>
+            </div>
+            <input type="range" id="breakInterval" min="1" max="30" value="5" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+        </div>
+
+        <!-- Buttons -->
+        <div class="flex justify-center space-x-4">
+            <button id="startPause" class="bg-[#ff6347] text-white px-4 py-2 rounded hover:bg-[#e55b41]">Start</button>
+            <button id="reset" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Reset</button>
+        </div>
+    </div>
+
+    <audio id="workSound" src="https://www.soundjay.com/buttons/beep-01a.mp3"></audio>
+    <audio id="breakSound" src="https://www.soundjay.com/buttons/beep-02.mp3"></audio>
+
+    <script>
+        const timerDisplay = document.getElementById('timer');
+        const modeDisplay = document.getElementById('mode');
+        const startPauseBtn = document.getElementById('startPause');
+        const resetBtn = document.getElementById('reset');
+        const workInterval = document.getElementById('workInterval');
+        const breakInterval = document.getElementById('breakInterval');
+        const workValue = document.getElementById('workValue');
+        const breakValue = document.getElementById('breakValue');
+        const progressCircle = document.querySelector('.progress-circle__progress');
+        const workSound = document.getElementById('workSound');
+        const breakSound = document.getElementById('breakSound');
+
+        let isRunning = false;
+        let isWorkSession = true;
+        let workMinutes = parseInt(workInterval.value); // Default 25 minutes
+        let breakMinutes = parseInt(breakInterval.value); // Default 5 minutes
+        let timeLeft = workMinutes * 60; // Seconds
+        let totalTime = workMinutes * 60; // For progress calculation
+        let timer;
+
+        // Format time as MM:SS
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
+            const secs = (seconds % 60).toString().padStart(2, '0');
+            return `${mins}:${secs}`;
+        }
+
+        // Update timer display and progress
+        function updateTimer() {
+            timerDisplay.textContent = formatTime(timeLeft);
+            const progress = ((totalTime - timeLeft) / totalTime) * 439.6;
+            progressCircle.style.strokeDashoffset = 439.6 - progress;
+        }
+
+        // Switch between work and break sessions
+        function switchSession() {
+            isWorkSession = !isWorkSession;
+            if (isWorkSession) {
+                workMinutes = parseInt(workInterval.value);
+                timeLeft = workMinutes * 60;
+                totalTime = workMinutes * 60;
+                modeDisplay.textContent = 'Work';
+                workSound.play();
+            } else {
+                breakMinutes = parseInt(breakInterval.value);
+                timeLeft = breakMinutes * 60;
+                totalTime = breakMinutes * 60;
+                modeDisplay.textContent = 'Break';
+                breakSound.play();
+            }
+            updateTimer();
+        }
+
+        // Start or pause the timer
+        function startPauseTimer() {
+            if (isRunning) {
+                clearInterval(timer);
+                startPauseBtn.textContent = 'Start';
+            } else {
+                timer = setInterval(() => {
+                    timeLeft--;
+                    updateTimer();
+                    if (timeLeft <= 0) {
+                        clearInterval(timer);
+                        isRunning = false;
+                        startPauseBtn.textContent = 'Start';
+                        switchSession();
+                    }
+                }, 1000);
+                startPauseBtn.textContent = 'Pause';
+            }
+            isRunning = !isRunning;
+        }
+
+        // Reset the timer
+        function resetTimer() {
+            clearInterval(timer);
+            isRunning = false;
+            isWorkSession = true;
+            workMinutes = parseInt(workInterval.value);
+            timeLeft = workMinutes * 60;
+            totalTime = workMinutes * 60;
+            modeDisplay.textContent = 'Work';
+            startPauseBtn.textContent = 'Start';
+            updateTimer();
+        }
+
+        // Update work interval
+        workInterval.addEventListener('input', () => {
+            workMinutes = parseInt(workInterval.value);
+            workValue.textContent = workMinutes;
+            if (isWorkSession && !isRunning) {
+                timeLeft = workMinutes * 60;
+                totalTime = workMinutes * 60;
+                updateTimer();
+            }
+        });
+
+        // Update break interval
+        breakInterval.addEventListener('input', () => {
+            breakMinutes = parseInt(breakInterval.value);
+            breakValue.textContent = breakMinutes;
+            if (!isWorkSession && !isRunning) {
+                timeLeft = breakMinutes * 60;
+                totalTime = breakMinutes * 60;
+                updateTimer();
+            }
+        });
+
+        // Event listeners for buttons
+        startPauseBtn.addEventListener('click', startPauseTimer);
+        resetBtn.addEventListener('click', resetTimer);
+
+        // Initial display
+        workValue.textContent = workMinutes;
+        breakValue.textContent = breakMinutes;
+        updateTimer();
+    </script>
+</body>
+</html>
