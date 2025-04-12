@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini Apps Selection</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            color: #333;
+        }
+
+        .category-selector {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .category-selector label {
+            font-size: 1.2em;
+            color: #333;
+            margin-right: 10px;
+        }
+
+        .category-selector select {
+            padding: 10px;
+            font-size: 1em;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+
+        .category-selector select:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .app-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .app-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s, opacity 0.3s;
+        }
+
+        .app-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .app-card img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .app-card h3 {
+            font-size: 1.5em;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .app-card p {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 15px;
+        }
+
+        .select-btn {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s;
+        }
+
+        .select-btn:hover {
+            background-color: #0056b3;
+        }
+
+        .app-card.hidden {
+            display: none;
+        }
+
+        @media (max-width: 600px) {
+            .app-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .category-selector select {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Select Your Mini App</h1>
+        </div>
+        <div class="category-selector">
+            <label for="category">Filter by Category:</label>
+            <select id="category" name="category">
+                <option value="all">All Apps</option>
+                <option value="productivity">Productivity</option>
+                <option value="utility">Utility</option>
+                <option value="weather">Weather</option>
+            </select>
+        </div>
+        <div class="app-grid">
+            <div class="app-card" data-category="utility">
+                <img src="https://via.placeholder.com/300x150?text=App+1" alt="App 1">
+                <h3>Calculator</h3>
+                <p>Simple and fast calculator for everyday use.</p>
+                <button class="select-btn">Select App</button>
+            </div>
+            <div class="app-card" data-category="productivity">
+                <img src="https://via.placeholder.com/300x150?text=App+2" alt="App 2">
+                <h3>Todo List</h3>
+                <p>Organize your tasks with ease and efficiency.</p>
+                <button class="select-btn">Select App</button>
+            </div>
+            <div class="app-card" data-category="weather">
+                <img src="https://via.placeholder.com/300x150?text=App+3" alt="App 3">
+                <h3>Weather</h3>
+                <p>Check real-time weather updates anywhere.</p>
+                <button class="select-btn">Select App</button>
+            </div>
+            <div class="app-card" data-category="productivity">
+                <img src="https://via.placeholder.com/300x150?text=App+4" alt="App 4">
+                <h3>Notes</h3>
+                <p>Jot down ideas and thoughts instantly.</p>
+                <button class="select-btn">Select App</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const categorySelect = document.getElementById('category');
+        const appCards = document.querySelectorAll('.app-card');
+
+        categorySelect.addEventListener('change', () => {
+            const selectedCategory = categorySelect.value;
+
+            appCards.forEach(card => {
+                const cardCategory = card.getAttribute('data-category');
+
+                if (selectedCategory === 'all' || cardCategory === selectedCategory) {
+                    card.classList.remove('hidden');
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
